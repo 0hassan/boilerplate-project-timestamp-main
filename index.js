@@ -18,6 +18,9 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+app.get("/api/", function (req, res) {
+  res.json({ unix: Date.now(), utc: utcDate(new Date()) });
+});
 
 // your first API endpoint... 
 app.get("/api/1451001600000", function (req, res) {
@@ -26,7 +29,14 @@ app.get("/api/1451001600000", function (req, res) {
 
 // date validator
 var date_validator = function (testDate) {
-  date = new Date(Number(testDate));
+  try {
+    var num = Number(testDate);
+    date = new Date(num);
+  } catch (any) {
+    var str = testDate;
+    date = new Date(str);
+  }
+  
   var valid = (date).getTime() >= 0;
   return valid;
 }
@@ -41,22 +51,19 @@ var utcDate = function (testDate) {
 }
 
 //parsing date into timestamp 
-app.get("/api/:date?", function (req, res) {
-  try {
-    var dt = req.query.date.toString();
-  } catch (error) {
-    console.error('No Input Has Given');
-  }
+app.get("/api/:date", function (req, res) {
+    var dt = req.params.date;
 
-  var testedDate = date_validator(dt);
-  if (dt === "") {
-    res.json({ unix: Date.now().toString(), utc: utcDate(new Date()) });
+  //var testedDate = date_validator(dt);
+  if (dt != null) {
+    if(dt.includes('-')){
+      res.json({ unix: Date.parse(dt), utc: utcDate(new Date(dt)) });
+    }
+    
   }
-  else if (testedDate) {
-    res.json({ unix: dt, utc: utcDate(new Date(Number(dt))) });
-  } else {
-    res.json({ error: "Invalid Date" });
-  }
+  else {
+     res.json({ unix: dt, utc: utcDate(new Date(dt) )});
+   }
 });
 
 
