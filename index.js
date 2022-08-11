@@ -18,41 +18,37 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-app.get("/api/", function (req, res) {
-  res.json({ unix: Date.now(), utc: utcDate(new Date()) });
-});
-
 // your first API endpoint... 
 app.get("/api/1451001600000", function (req, res) {
   res.json({ unix: 1451001600000, utc: "Fri, 25 Dec 2015 00:00:00 GMT" });
 });
+app.get("/api/:date", function (req, res){
+  var dateString = req.params.date;
+  if (/\d{5,}/.test(dateString)) {
 
-var response = {};
-//parsing date into timestamp 
-app.get("/api/:date", function (req, res) {
-  var date_string = req.params.date;
-  if(date_string.match(/\d{5,}/)){
-    date_string = +date_string;
-  }
-  let date = new Date(date_string);
-  
-  if (date_string.includes('-')) {
-    response['unix'] = Date.parse(date_string).toString();
-    response['utc'] = date.toUTCString();
+    const dateInt = parseInt(dateString);
+
+    //Date regards numbers as unix timestamps, strings are processed differently
+
+    res.json({ unix: dateInt, utc: new Date(dateInt).toUTCString() });
+
+  } else {
+
+    let dateObject = new Date(dateString);
+
+    if (dateObject.toString() === "Invalid Date") {
+
+      res.json({ error: "Invalid Date" });
+
+    } else {
+
+      res.json({ unix: dateObject.valueOf(), utc: dateObject.toUTCString() });
+
+    }
 
   }
-  if (!isNaN(date_string)) {
-    date = new Date(Number(date_string));
-    response['unix'] = date_string.toString();
-    response['utc'] = date.toUTCString();
 
-  }
-  if (date.toUTCString() === "Invalid Date") {
-    res.json({ error: "Invalid Date" });
-  }
-  res.json(response);
 });
-
 
 var listener = app.listen(3500, function () {
   console.log('Your app is listening on port ' + listener.address().port);
