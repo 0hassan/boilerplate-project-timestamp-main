@@ -28,24 +28,26 @@ app.get("/api/1451001600000", function (req, res) {
 });
 
 // utc date setter
-var utcDate = function (testDate) {
-  const date = new Date(testDate);
+var utcDate = function (date_string) {
+  const date = new Date(date_string);
   return date.toUTCString();
 }
 
 var response = {};
 //parsing date into timestamp 
 app.get("/api/:date", function (req, res) {
-  var dt = req.params.date;
+  var date_string = req.params.date;
 
-  if (dt.includes('-')) {
-    response['unix'] = Date.parse(dt).toString();
-    response['utc'] = utcDate(new Date(dt)).toString();
+  if (date_string.includes('-')) {
+    var date = new Date(date_string);
+    response['unix'] = Date.parse(date_string).toString();
+    response['utc'] = utcDate(date).toString();
 
   }
-  if (!isNaN(dt)) {
-    response['unix'] = dt.toString();
-    response['utc'] = utcDate(new Date(Number(dt))).toString();
+  if (!isNaN(date_string)) {
+    var date = new Date(Number(date_string));
+    response['unix'] = date_string.toString();
+    response['utc'] = utcDate(date).toString();
 
   }
   if ((response['unix'].valueOf() === 'NaN') || (response['utc'].valueOf() === "Invalid Date")) {
